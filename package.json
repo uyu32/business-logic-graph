@@ -1,0 +1,19 @@
+{
+  "name": "business-logic-graph",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Progressive business logic in independent data Git repositories with master baselines and development overlays.",
+  "scripts": {
+    "test": "node --test packages/core/test/*.test.mjs",
+    "validate:example": "node scripts/blg.mjs validate examples/order-demo/graph.json",
+    "context:example": "node scripts/blg.mjs context examples/order-demo/graph.json order-process --depth 2 --max-nodes 24",
+    "gate:example": "node scripts/blg.mjs gate examples/order-demo/graph.json order-filter",
+    "build:viewer": "npm --prefix apps/viewer run build",
+    "check": "npm run test && npm run validate:example && npm --prefix apps/viewer run check && npm run build:viewer"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

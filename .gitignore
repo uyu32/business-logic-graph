@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.sites-runtime/
+*.tmp
+*.bak
+.DS_Store
+
+# Local development artifacts and private repository examples
+*.tsbuildinfo
+*.log
+.env
+.env.*
+!.env.example
+.local/
+.business-logic/
+examples/rec-engine/
+registry.json

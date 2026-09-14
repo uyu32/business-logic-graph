@@ -1,0 +1,30 @@
+{
+  "name": "business-logic-graph",
+  "version": "0.1.0+codex.20260913163631",
+  "description": "Maintain progressively verified business logic in independent data Git repositories, with master baselines and branch overlays.",
+  "author": {
+    "name": "Business Logic Graph Contributors"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Business Logic Graph",
+    "shortDescription": "Verify business logic before coding",
+    "longDescription": "Keeps business graphs in independent data Git repositories, outside target source repositories. It composes master baselines and worktree-specific branch overlays, loads bounded context, verifies source/config/tests, and gates development plans on current evidence.",
+    "developerName": "Business Logic Graph Contributors",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Independent data Git repositories",
+      "Master baseline and branch overlays",
+      "Bounded progressive business context",
+      "Evidence-aware plan gate",
+      "Double-click graph expansion",
+      "Live local graph preview",
+      "RFC 6902 graph updates"
+    ],
+    "defaultPrompt": [
+      "Use the repository's Business Logic Graph to locate and verify the business area related to my request before proposing a development plan.",
+      "Explain this business flow from the BLG, verify uncertain claims against the repository, and record the verified result.",
+      "Validate the BLG and report stale, inferred, conflicting, or insufficiently evidenced business claims."
+    ]
+  }
+}

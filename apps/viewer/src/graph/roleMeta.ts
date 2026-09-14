@@ -1,0 +1,162 @@
+import type { StepRole } from '@/fcg/types'
+
+/**
+ * Step 角色的视觉与中文标签。
+ * 配色思路：相邻角色用同色相不同明度，避免画布颜色喧宾夺主。
+ */
+export const ROLE_META: Record<
+  StepRole,
+  { label: string; bg: string; fg: string; minimap: string }
+> = {
+  input: {
+    label: '入口',
+    bg: 'oklch(0.93 0.04 230)',
+    fg: 'oklch(0.42 0.07 230)',
+    minimap: 'oklch(0.78 0.05 230)',
+  },
+  validation: {
+    label: '校验',
+    bg: 'oklch(0.93 0.04 200)',
+    fg: 'oklch(0.42 0.06 200)',
+    minimap: 'oklch(0.78 0.05 200)',
+  },
+  auth: {
+    label: '鉴权',
+    bg: 'oklch(0.92 0.06 50)',
+    fg: 'oklch(0.46 0.13 40)',
+    minimap: 'oklch(0.78 0.11 45)',
+  },
+  'data-read': {
+    label: '读数据',
+    bg: 'oklch(0.92 0.04 160)',
+    fg: 'oklch(0.4 0.07 150)',
+    minimap: 'oklch(0.78 0.06 150)',
+  },
+  'data-write': {
+    label: '写数据',
+    bg: 'oklch(0.91 0.05 140)',
+    fg: 'oklch(0.4 0.08 140)',
+    minimap: 'oklch(0.76 0.07 140)',
+  },
+  compute: {
+    label: '计算',
+    bg: 'oklch(0.93 0.04 280)',
+    fg: 'oklch(0.42 0.07 280)',
+    minimap: 'oklch(0.78 0.05 280)',
+  },
+  transform: {
+    label: '转换',
+    bg: 'oklch(0.93 0.035 305)',
+    fg: 'oklch(0.42 0.07 305)',
+    minimap: 'oklch(0.8 0.06 305)',
+  },
+  'side-effect': {
+    label: '副作用',
+    bg: 'oklch(0.92 0.06 30)',
+    fg: 'oklch(0.5 0.13 30)',
+    minimap: 'oklch(0.78 0.11 30)',
+  },
+  output: {
+    label: '出口',
+    bg: 'oklch(0.93 0.04 130)',
+    fg: 'oklch(0.42 0.07 130)',
+    minimap: 'oklch(0.78 0.05 130)',
+  },
+  error: {
+    label: '错误',
+    bg: 'oklch(0.92 0.06 25)',
+    fg: 'oklch(0.5 0.14 25)',
+    minimap: 'oklch(0.78 0.12 25)',
+  },
+  other: {
+    label: '其他',
+    bg: 'oklch(0.92 0.012 70)',
+    fg: 'oklch(0.5 0.018 65)',
+    minimap: 'oklch(0.8 0.012 70)',
+  },
+}
+
+import type { FlowKind } from '@/fcg/types'
+
+export const FLOW_META: Record<
+  FlowKind,
+  { label: string; stroke: string; dashed: boolean; animated: boolean }
+> = {
+  next: {
+    label: '',
+    stroke: 'var(--color-edge-call)',
+    dashed: false,
+    animated: false,
+  },
+  async: {
+    label: '异步',
+    stroke: 'var(--color-edge-route)',
+    dashed: true,
+    animated: true,
+  },
+  conditional: {
+    label: '条件',
+    stroke: 'oklch(0.6 0.02 50)',
+    dashed: false,
+    animated: false,
+  },
+  loop: {
+    label: '循环',
+    stroke: 'oklch(0.55 0.06 240)',
+    dashed: false,
+    animated: false,
+  },
+  error: {
+    label: '错误',
+    stroke: 'oklch(0.6 0.13 25)',
+    dashed: true,
+    animated: false,
+  },
+}
+
+/**
+ * 跨功能关系的视觉语言（v0.2 简化为 3 类）。
+ * 设计思路：用颜色 + 虚实区分语义，让用户一眼分清主线、数据线、依赖线。
+ *   - triggers   (用户旅程主线)        → 暖橘实线，最显眼
+ *   - flow       (数据/事件流转)        → 蓝实线（async 时虚线动画）
+ *   - depends_on (静态依赖，先决条件)   → 灰虚线，安静
+ */
+export type CrossKind = 'triggers' | 'flow' | 'depends_on'
+
+/**
+ * cross_feature 边的默认视觉权重。
+ *
+ * 设计原则：默认状态（无 hover / 无 selected）下，画布应该被节点主导，
+ * 边只是隐约可见的背景结构。hover/选中后再升级到 100% opacity（hover 高亮逻辑里处理）。
+ *
+ * 压低 opacity 是治"线太多看不清"的最低成本方案：
+ * - 不动布局算法
+ * - 不改 schema
+ * - 不影响 hover 高亮的相对反差（背景越淡，亮起来越显眼）
+ */
+export const CROSS_META: Record<
+  CrossKind,
+  { label: string; stroke: string; dashed: boolean; strokeWidth: number; opacity: number }
+> = {
+  triggers: {
+    label: '触发',
+    stroke: 'oklch(0.62 0.135 45)', // 暖橘，与 accent 同色相
+    dashed: false,
+    strokeWidth: 1.6,
+    opacity: 0.28,
+  },
+  flow: {
+    label: '数据流',
+    stroke: 'oklch(0.55 0.09 240)', // 蓝
+    dashed: false,
+    strokeWidth: 1.5,
+    opacity: 0.26,
+  },
+  depends_on: {
+    label: '依赖',
+    stroke: 'oklch(0.65 0.018 70)', // 暖灰，安静
+    dashed: true,
+    strokeWidth: 1.1,
+    opacity: 0.22,
+  },
+}

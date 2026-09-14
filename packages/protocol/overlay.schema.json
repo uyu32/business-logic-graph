@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BLG independent branch change set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "revision", "baselineRef", "baseSourceCommit", "baseGraphRevision", "baseGraphDigest", "branch", "worktreeId", "sourceHead", "graphRevision", "updatedAt", "reason", "operations"],
+  "properties": {
+    "schemaVersion": { "const": "0.1.0" },
+    "id": { "type": "string", "format": "uuid" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "baselineRef": { "type": "string" },
+    "baseSourceCommit": { "type": "string" },
+    "baseGraphRevision": { "type": "integer", "minimum": 0 },
+    "baseGraphDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "branch": { "type": ["string", "null"] },
+    "worktreeId": { "type": "string" },
+    "sourceHead": { "type": "string" },
+    "graphRevision": { "type": "integer", "minimum": 0 },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "reason": { "type": "string" },
+    "operations": { "type": "array", "items": {
+      "type": "object", "required": ["op", "path"], "additionalProperties": false,
+      "properties": { "op": { "enum": ["add", "replace", "remove"] }, "path": { "type": "string", "pattern": "^/(title|(nodes|edges|claims|evidence|tours)/[^/]+)$" }, "value": {} }
+    } }
+  }
+}

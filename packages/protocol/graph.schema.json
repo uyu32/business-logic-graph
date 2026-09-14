@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://business-logic-graph.dev/schema/graph-0.1.0.json",
+  "title": "Business Logic Graph",
+  "type": "object",
+  "required": ["schemaVersion", "graphId", "graphRevision", "repository", "nodes", "edges", "claims", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "0.1.0" },
+    "graphId": { "$ref": "#/$defs/id" },
+    "graphRevision": { "type": "integer", "minimum": 0 },
+    "title": { "type": "string", "minLength": 1 },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "view": { "$ref": "#/$defs/workspaceView" },
+    "repository": {
+      "type": "object",
+      "required": ["root", "head"],
+      "additionalProperties": false,
+      "properties": {
+        "root": { "type": "string" },
+        "head": { "type": "string", "minLength": 1 },
+        "remote": { "type": "string" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "nodes": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/node" }
+    },
+    "edges": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/edge" }
+    },
+    "claims": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/claim" }
+    },
+    "evidence": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/evidence" }
+    },
+    "tours": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/tour" },
+      "default": {}
+    }
+  },
+  "$defs": {
+    "workspaceView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repoId", "scope", "baselineRef", "sourceKind", "worktreeId", "baselineAdvanced", "conflicts", "evidenceChecks", "nodeChanges"],
+      "properties": {
+        "repoId": { "type": "string" },
+        "scope": { "enum": ["baseline", "branch"] },
+        "baselineRef": { "type": "string" },
+        "baselineSourceHead": { "type": "string" },
+        "recordedBaselineHead": { "type": "string" },
+        "baselineGraphRevision": { "type": "integer", "minimum": 0 },
+        "sourceKind": { "enum": ["git", "snapshot"] },
+        "sourceBranch": { "type": ["string", "null"] },
+        "worktreeId": { "type": "string" },
+        "overlayId": { "type": ["string", "null"] },
+        "overlayRevision": { "type": "integer", "minimum": 0 },
+        "baselineAdvanced": { "type": "boolean" },
+        "conflicts": { "type": "array", "items": { "type": "object", "required": ["path", "message"], "properties": { "path": { "type": "string" }, "message": { "type": "string" }, "before": {}, "current": {}, "proposed": {} } } },
+        "evidenceChecks": { "type": "object", "additionalProperties": { "type": "boolean" } },
+        "nodeChanges": { "type": "object", "additionalProperties": {
+          "type": "object", "required": ["kind"], "additionalProperties": false,
+          "properties": { "kind": { "enum": ["added", "modified", "deleted"] }, "before": { "$ref": "#/$defs/node" }, "after": { "$ref": "#/$defs/node" }, "beforeClaims": { "type": "array", "items": { "type": "string" } }, "afterClaims": { "type": "array", "items": { "type": "string" } } }
+        } }
+      }
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]*$",
+      "maxLength": 160
+    },
+    "stringList": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "type", "title", "summary", "parentId"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": {
+          "enum": ["business-capability", "business-flow", "business-step", "business-rule", "integration", "data-change", "business-outcome"]
+        },
+        "parentId": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+        "title": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string" },
+        "businessPurpose": { "type": "string" },
+        "order": { "type": "number" },
+        "tags": { "$ref": "#/$defs/stringList" },
+        "inputs": { "$ref": "#/$defs/stringList" },
+        "outputs": { "$ref": "#/$defs/stringList" },
+        "sideEffects": { "$ref": "#/$defs/stringList" },
+        "claimIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" },
+          "uniqueItems": true
+        },
+        "locks": {
+          "type": "array",
+          "items": { "enum": ["title", "summary", "businessPurpose", "inputs", "outputs", "sideEffects"] },
+          "uniqueItems": true
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "required": ["id", "from", "to", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "from": { "$ref": "#/$defs/id" },
+        "to": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["next", "condition", "error", "async", "data", "dependency"] },
+        "condition": { "type": "string" },
+        "label": { "type": "string" },
+        "order": { "type": "number" },
+        "claimIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["status", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["verified", "inferred", "user-confirmed", "stale", "conflict", "unknown"] },
+        "commit": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "lastVerifiedAt": { "type": "string", "format": "date-time" },
+        "verifiedBy": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": ["id", "nodeId", "kind", "statement", "verification", "evidenceIds"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "nodeId": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["code-fact", "model-inference", "business-confirmation", "open-question"] },
+        "statement": { "type": "string", "minLength": 1 },
+        "planGate": { "enum": ["required", "advisory", "none"], "default": "advisory" },
+        "verification": { "$ref": "#/$defs/verification" },
+        "evidenceIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" },
+          "uniqueItems": true
+        },
+        "locked": { "type": "boolean", "default": false },
+        "supersedes": { "$ref": "#/$defs/id" }
+      }
+    },
+    "locator": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "symbol": { "type": "string" },
+        "stableKey": { "type": "string" },
+        "lineStart": { "type": "integer", "minimum": 1 },
+        "lineEnd": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "evidenceVerification": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["candidate", "verified", "stale", "rejected"] },
+        "commit": { "type": "string" },
+        "lastVerifiedAt": { "type": "string", "format": "date-time" },
+        "verifiedBy": { "type": "string" }
+      }
+    },
+    "fingerprint": {
+      "type": "object",
+      "required": ["algorithm", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": { "enum": ["sha256", "symbol-shape-v1", "text-anchor-v1"] },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["id", "kind", "provider", "locator", "verification", "claimIds"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["source", "config", "test", "runtime", "user", "provider-candidate"] },
+        "provider": { "type": "string", "minLength": 1 },
+        "locator": { "$ref": "#/$defs/locator" },
+        "fingerprint": { "$ref": "#/$defs/fingerprint" },
+        "summary": { "type": "string" },
+        "claimIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" },
+          "uniqueItems": true
+        },
+        "verification": { "$ref": "#/$defs/evidenceVerification" }
+      }
+    },
+    "tour": {
+      "type": "object",
+      "required": ["id", "title", "nodeIds"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1 },
+        "nodeIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://business-logic-graph.dev/schema/patch-envelope-0.1.0.json",
+  "title": "Business Logic Graph Patch Envelope",
+  "type": "object",
+  "required": ["schemaVersion", "baseGraphRevision", "repositoryHead", "reason", "operations"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "0.1.0" },
+    "baseGraphRevision": { "type": "integer", "minimum": 0 },
+    "repositoryHead": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "minLength": 1 },
+    "actor": { "type": "string" },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/operation" }
+    },
+    "postconditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "validGraph": { "type": "boolean" },
+        "expectedGraphRevision": { "type": "integer", "minimum": 1 },
+        "requiredClaimStatuses": {
+          "type": "object",
+          "additionalProperties": { "enum": ["verified", "inferred", "user-confirmed", "stale", "conflict", "unknown"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "operation": {
+      "type": "object",
+      "required": ["op", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "op": { "enum": ["add", "remove", "replace", "move", "copy", "test"] },
+        "path": { "type": "string", "pattern": "^(|/.*)$" },
+        "from": { "type": "string", "pattern": "^(|/.*)$" },
+        "value": true
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "op": { "enum": ["add", "replace", "test"] } } },
+          "then": { "required": ["value"] }
+        },
+        {
+          "if": { "properties": { "op": { "enum": ["move", "copy"] } } },
+          "then": { "required": ["from"] }
+        }
+      ]
+    }
+  }
+}

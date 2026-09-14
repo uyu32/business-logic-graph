@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "0.1.0",
+  "graphId": "synthetic-order-business",
+  "graphRevision": 1,
+  "title": "合成示例：订单处理与待核实库存",
+  "updatedAt": "2026-09-14T00:00:00.000Z",
+  "repository": { "root": ".", "head": "synthetic-order-demo-v1", "dirty": false },
+  "nodes": {
+    "order-process": {
+      "id": "order-process", "type": "business-flow", "parentId": null,
+      "title": "处理订单", "summary": "虚构流程：接收订单、校验金额，再返回排队结果。",
+      "businessPurpose": "演示从业务总览下钻到规则和代码证据。", "order": 10,
+      "inputs": ["订单列表", "金额策略"], "outputs": ["排队结果"], "claimIds": []
+    },
+    "order-accept": {
+      "id": "order-accept", "type": "business-step", "parentId": "order-process",
+      "title": "接收订单列表", "summary": "演示函数接收内存列表，不访问真实用户或网络。",
+      "order": 10, "claimIds": []
+    },
+    "order-filter": {
+      "id": "order-filter", "type": "business-step", "parentId": "order-process",
+      "title": "按金额策略过滤", "summary": "仅保留金额为有限数值且达到最低金额的订单。",
+      "order": 20, "claimIds": ["claim-filter-entry"]
+    },
+    "order-minimum-filter": {
+      "id": "order-minimum-filter", "type": "business-rule", "parentId": "order-filter",
+      "title": "最低金额过滤", "summary": "金额小于阈值时剔除，等于阈值时保留。",
+      "tags": ["金额过滤", "minimumAmount"], "order": 10, "claimIds": ["claim-minimum-filter"]
+    },
+    "order-queue": {
+      "id": "order-queue", "type": "business-outcome", "parentId": "order-process",
+      "title": "返回排队结果", "summary": "生成 id 和 queued 状态；不连接实际队列。",
+      "order": 30, "claimIds": []
+    },
+    "inventory-process": {
+      "id": "inventory-process", "type": "business-flow", "parentId": null,
+      "title": "库存处理（待核实）", "summary": "演示未核实规则阻止最终开发计划。",
+      "order": 20, "claimIds": ["claim-inventory-reservation"]
+    }
+  },
+  "edges": {
+    "edge-order-1": { "id": "edge-order-1", "from": "order-accept", "to": "order-filter", "kind": "next" },
+    "edge-order-2": { "id": "edge-order-2", "from": "order-filter", "to": "order-queue", "kind": "condition", "condition": "存在符合金额要求的订单" }
+  },
+  "claims": {
+    "claim-filter-entry": {
+      "id": "claim-filter-entry", "nodeId": "order-filter", "kind": "code-fact",
+      "statement": "演示代码在返回排队结果前调用 filterOrders。", "planGate": "required",
+      "verification": { "status": "verified", "commit": "synthetic-order-demo-v1", "confidence": 1, "note": "合成示例标记，不代表真实仓库。" },
+      "evidenceIds": ["ev-filter-source"]
+    },
+    "claim-minimum-filter": {
+      "id": "claim-minimum-filter", "nodeId": "order-minimum-filter", "kind": "code-fact",
+      "statement": "演示规则保留 amount >= minimumAmount 的有效金额订单。", "planGate": "required",
+      "verification": { "status": "verified", "commit": "synthetic-order-demo-v1", "confidence": 1 },
+      "evidenceIds": ["ev-filter-source", "ev-minimum-config", "ev-minimum-test"]
+    },
+    "claim-inventory-reservation": {
+      "id": "claim-inventory-reservation", "nodeId": "inventory-process", "kind": "model-inference",
+      "statement": "尚未实现或核实库存预留，仅展示门禁阻断。", "planGate": "required",
+      "verification": { "status": "stale", "commit": "synthetic-order-demo-v0", "confidence": 0.2 },
+      "evidenceIds": ["ev-inventory-candidate"]
+    }
+  },
+  "evidence": {
+    "ev-filter-source": {
+      "id": "ev-filter-source", "kind": "source", "provider": "repository",
+      "locator": { "path": "src/orders.mjs", "symbol": "filterOrders", "stableKey": "src/orders.mjs#filterOrders" },
+      "summary": "虚构订单过滤与排队演示函数。", "claimIds": ["claim-filter-entry", "claim-minimum-filter"],
+      "verification": { "status": "verified", "commit": "synthetic-order-demo-v1" }
+    },
+    "ev-minimum-config": {
+      "id": "ev-minimum-config", "kind": "config", "provider": "repository",
+      "locator": { "path": "config/order-policy.json", "symbol": "minimumAmount" },
+      "summary": "演示最低金额为 10。", "claimIds": ["claim-minimum-filter"],
+      "verification": { "status": "verified", "commit": "synthetic-order-demo-v1" }
+    },
+    "ev-minimum-test": {
+      "id": "ev-minimum-test", "kind": "test", "provider": "repository",
+      "locator": { "path": "test/orders.test.mjs" },
+      "summary": "金额边界、无效金额及不修改输入测试。", "claimIds": ["claim-minimum-filter"],
+      "verification": { "status": "verified", "commit": "synthetic-order-demo-v1" }
+    },
+    "ev-inventory-candidate": {
+      "id": "ev-inventory-candidate", "kind": "provider-candidate", "provider": "demo",
+      "locator": { "path": "not-implemented/inventory.mjs" },
+      "summary": "故意保留的未核实候选，不存在实际实现。", "claimIds": ["claim-inventory-reservation"],
+      "verification": { "status": "candidate" }
+    }
+  },
+  "tours": {
+    "order-tour": { "id": "order-tour", "title": "从总览下钻到金额规则", "nodeIds": ["order-process", "order-filter", "order-minimum-filter"] }
+  }
+}
